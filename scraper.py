@@ -71,9 +71,6 @@ class Scraper():
                         self.addToDB(tag['href'])
                         if self.counter < self.limit:
                             self.urls.append(tag['href'])
-                
-                print "Urls left: " + len(self.urls)
-                print "Urls found: " + self.counter
 
             except:
                 print "Error, something went wrong!"

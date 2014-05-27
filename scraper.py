@@ -52,6 +52,7 @@ class Scraper():
     def crawl(self):
         while len(self.urls) > 0:
             sleep(self.sleeptime)
+            self.getUrlFromDb()
             try:
                 try:
                     htmltext = self.urlOpener.open(self.urls[0]).read()
@@ -67,17 +68,29 @@ class Scraper():
                     if self.url in tag['href'] and self.checkDB(tag['href']) != True and self.rp.can_fetch('*', tag['href']):
                         self.counter += 1
                         print 'Adding:', tag['href']
+                        self.markVisited(tag['href'])
                         self.urlfile.write(tag['href']  + '\n')            
                         self.addToDB(tag['href'])
                         if self.counter < self.limit:
                             self.urls.append(tag['href'])
 
-            except e:
+            except Exception, e:
                 print e
 
                                     
-    def initDB(self):
-        pass
+    def getUrlFromDb(self):
+        q = '''
+            SELECT VISITED FROM pythondbtable
+            WHERE VISITED LIKE "1";
+            '''
+        response = self.db.query(q)
+        print response
+
+    def markVisited(self, url):
+        q = '''
+            INSERT INTO PYTHONDBTABLE (WEBSITE, URL, VISITED) VALUES ('%s', '%s', '%s');
+            ''' % (self.url, url, '1')
+        
                         
     def addToDB(self, url):
         q = """
@@ -89,7 +102,7 @@ class Scraper():
             
     def checkDB(self, url):
         q = """
-        select * from pythondbtable where url like '%s';
+        select url from pythondbtable where url like '%s';
         """ % (url)
         response = self.db.query(q)
         if response:
